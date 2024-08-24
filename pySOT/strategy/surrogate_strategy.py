@@ -1,10 +1,11 @@
+# 在propose_action()方法中添加了用于发送修改rank信息的部分
 import abc
 import logging
 import os
 
 import dill
 import numpy as np
-from poap.strategy import BaseStrategy, Proposal
+from poap_modified.strategy import BaseStrategy, Proposal
 
 from ..experimental_design import ExperimentalDesign
 from ..optimization_problems import OptimizationProblem

@@ -28,6 +28,7 @@ from .Func2I import Func2I
 from .Func3C import Func3C
 from .Func3I import Func3I
 from .Func2R import Func2R
+from .Func3R import Func3R
 
 __all__ = [
     "OptimizationProblem",
@@ -59,4 +60,5 @@ __all__ = [
     "Func3C",
     "Func3I",
     "Func2R",
+    "Func3R",
 ]

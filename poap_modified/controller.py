@@ -3,7 +3,7 @@
    :synopsis: Basic controller classes for asynchronous optimization.
 .. moduleauthor:: David Bindel <bindel@cornell.edu>
 """
-
+# 主要修改了SerialController类以及添加best_loc()方法。修改rank的核心代码基本都集中在该# 文件
 try:
     import Queue
 except ImportError:
@@ -15,7 +15,7 @@ import threading
 import logging
 import time
 import numpy as np
-from poap.strategy import EvalRecord
+from poap_modified.strategy import EvalRecord
 
 
 # Get module-level logger
@@ -170,8 +170,9 @@ class SerialController(Controller):
 
     def _run(self, merit=None, filter=None, reraise=True):
         "Run the optimization and return the best value."
-        print("Initial ranks:",end=' ')
-        print(self.strategy.opt_prob.ranks)
+        if self.strategy.opt_prob.detail:
+            print("Initial ranks:",end=' ')
+            print(self.strategy.opt_prob.ranks)
         while True:
             proposal = self.strategy.propose_action()
             if not proposal:
@@ -185,9 +186,12 @@ class SerialController(Controller):
                 proposal.accept()
                 old_ranks = self.strategy.opt_prob.ranks.copy()
                 self.strategy.opt_prob.rankChange()
+                if self.strategy.opt_prob.detail:
+                    print('The rank has changed')
                 new_ranks = self.strategy.opt_prob.ranks
-                print("New ranks:",end=' ')
-                print(new_ranks)
+                if self.strategy.opt_prob.detail:
+                    print("New ranks:",end=' ')
+                    print(new_ranks)
                 #############
                 #改rank的代码#
                 if filter is None:
@@ -200,8 +204,11 @@ class SerialController(Controller):
                     for f in fcomplete:
                         old = f.params[0][catindex]
                         f.params[0][catindex] = new_ranks[rank_index][np.where(old_ranks[rank_index] == old)[0][0]]
+                # print("first point:",end=' ')
+                # print(fcomplete[0].params[0])
+                # print()
                 #############
-                self.strategy.recover()
+                self.strategy.recover() #########恢复changerank状态为False
             elif proposal.action == 'eval':
                 logger.debug("Accept eval proposal")
                 proposal.record = self.new_feval(proposal.args)

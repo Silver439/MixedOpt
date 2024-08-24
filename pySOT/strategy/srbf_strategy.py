@@ -1,5 +1,7 @@
+# 该文件只做了极小的改动，添加了一个用于发送修改rank信息的语句
 import logging
 import math
+from colorama import Fore, Back, Style # 修改输出文本的颜色
 
 import numpy as np
 
@@ -96,7 +98,6 @@ class SRBFStrategy(SurrogateBaseStrategy):
         weights=None,
         num_cand=None,
     ):
-
         self.dtol = 1e-3 * math.sqrt(opt_prob.dim)
         if weights is None:
             weights = [0.3, 0.5, 0.8, 0.95]
@@ -109,6 +110,7 @@ class SRBFStrategy(SurrogateBaseStrategy):
 
         self.sampling_radius_min = 0.2 * (0.5 ** 6)
         self.sampling_radius_max = 0.2
+
 
         if asynchronous:
             d = float(opt_prob.dim)
@@ -132,6 +134,7 @@ class SRBFStrategy(SurrogateBaseStrategy):
             extra_vals=extra_vals,
             use_restarts=use_restarts,
         )
+
 
     def check_input(self):
         """Check inputs."""
@@ -210,15 +213,18 @@ class SRBFStrategy(SurrogateBaseStrategy):
             self.ev_last = self.get_ev()  # Update the event id
             self.status = 0
             self.sampling_radius /= 2
-            print('shrink',end=' ')
-            self.change()
-            #self.opt_prob.rankChange() ########################### Change rank
+            if self.opt_prob.detail:
+                print(num_evals,end=' ')
+                print("\033[0;31;40mshrink\033[0m",end=' ')
+            #self.change() ###########################发送rankchange的信息
             logger.info("Reducing sampling radius")
         if self.status >= self.succtol:
             self.ev_last = self.get_ev()  # Update the event id
             self.status = 0
             self.sampling_radius = min([2.0 * self.sampling_radius, self.sampling_radius_max])
-            print('expand')
+            if self.opt_prob.detail:
+                print(num_evals,end=' ')
+                print("\033[0;34;40mexpand\033[0m")
             logger.info("Increasing sampling radius")
 
         # Check if we have converged

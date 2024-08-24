@@ -1,11 +1,10 @@
 import numpy as np
-import random
 
 from .optimization_problem import OptimizationProblem
 
-class Func2R(OptimizationProblem):
-    """Func2C is a mixed categorical and continuous function. The first 2 dimensions are categorical,
-    with possible 3 and 5 possible values respectively. The last 2 dimensions are continuous"""
+class Func3R(OptimizationProblem):
+    """Func3C is a mixed categorical and continuous function. The first 3 dimensions are categorical,
+    with possible 3,4 and 5 possible values respectively. The last 2 dimensions are continuous"""
 
     """
     Global minimum of this function is at
@@ -14,22 +13,22 @@ class Func2R(OptimizationProblem):
     """
     problem_type = 'mixed'
 
-    def __init__(self, dim=4):
-        # Specifies the indices of the dimensions that are categorical and continuous, respectively
-        self.dim = 4
-        self.min = -0.2063
-        self.minimum = np.array([1, 1, -0.0898/2, 0.7126/2])
+    def __init__(self, dim=5):
+        # Specifies the indices of the dimensions that are categorical and continuous, respectively 真实最优值未知
+        self.dim = 5
+        self.min = -0.7
+        self.minimum = np.array([1, 1, 1, -0.0898/2, 0.7126/2])
         # Specfies the range for the continuous variables
-        self.lb = np.array([-0.49,-0.49,-1, -1])
-        self.ub = np.array([2.49,4.49,1, 1])
+        self.lb = np.array([-0.49, -0.49, -0.49, -1, -1])
+        self.ub = np.array([2.49, 3.49, 4.49, 1, 1])
         self.lamda = 1e-6
         self.mean, self.std = None, None
-        self.int_var = np.array([0, 1])
-        self.cat_var = np.array([0, 1])
-        self.cont_var = np.array([2, 3])
-        self.ranks = [[0,1,2],[0,1,2,3,4]]
+        self.int_var = np.array([0, 1, 2])
+        self.cat_var = np.array([0, 1, 2])
+        self.cont_var = np.array([3, 4])
+        self.ranks = [[0,1,2],[0,1,2,3],[0,1,2,3,4]]
         self.detail = False
-        self.info = str(dim) + "-dimensional Func2C function \n" + "Global optimum: f(1, 1, -0.0898/2, 0.7126/2) = -0.2063"
+        self.info = str(dim) + "-dimensional Func3C function \n" + "Global optimum: 未知"
 
     def eval(self, X):
         if X.ndim == 1:
@@ -43,19 +42,28 @@ class Func2R(OptimizationProblem):
         for i, X in enumerate(X):
             c0 = self.ranks[0].index(X_cat[i, 0])
             c1 = self.ranks[1].index(X_cat[i, 1])
+            c2 = self.ranks[2].index(X_cat[i, 2])
             if c0 == 0:
                 res[i] = myrosenbrock(X_cont[i, :])
             elif c0 == 1:
                 res[i] = mysixhumpcamp(X_cont[i, :])
-            else:
+            elif c0 == 2:  # should never be activated
                 res[i] = mybeale(X_cont[i, :])
 
             if c1 == 0:
                 res[i] += myrosenbrock(X_cont[i, :])
             elif c1 == 1:
                 res[i] += mysixhumpcamp(X_cont[i, :])
-            else:
+            else: # should never be activated
                 res[i] += mybeale(X_cont[i, :])
+
+            if c2 == 0:
+                res[i] += 5 * mysixhumpcamp(X_cont[i, :])
+            elif c2 == 1:
+                res[i] += 2 * myrosenbrock(X_cont[i, :])
+            else: # should never be activated
+                res[i] += X_cont[i, 1] * mybeale(X_cont[i, :])
+                
         res += self.lamda * np.random.rand(*res.shape)
         return res[0]
     
@@ -68,6 +76,7 @@ class Func2R(OptimizationProblem):
     def rankChange(self):
         self.ranks[0] = np.random.permutation(self.ranks[0]).tolist()
         self.ranks[1] = np.random.permutation(self.ranks[1]).tolist()
+        self.ranks[2] = np.random.permutation(self.ranks[2]).tolist()
 
 # =============================================================================
 # Rosenbrock Function (f_min = 0)

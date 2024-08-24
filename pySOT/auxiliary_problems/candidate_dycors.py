@@ -1,3 +1,4 @@
+# 该文件中的改动主要是用于设定类别型变量的扰动规则。
 import numpy as np
 import scipy.stats as stats
 

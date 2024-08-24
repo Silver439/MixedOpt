@@ -65,7 +65,6 @@ class DYCORSStrategy(SRBFStrategy):
         weights=None,
         num_cand=None,
     ):
-
         self.num_exp = exp_design.num_pts  # We need this later
 
         super().__init__(
@@ -81,11 +80,15 @@ class DYCORSStrategy(SRBFStrategy):
             weights=weights,
             num_cand=num_cand,
         )
-    
+
+    def set_detailture(self):
+        super().set_detailture()
+
     def recover(self):
         super().recover()
 
     def generate_evals(self, num_pts):
+
         """Generate the next adaptive sample points."""
         num_evals = len(self.X) + len(self.Xpend) - self.num_exp + 1.0
         min_prob = np.min([1.0, 1.0 / self.opt_prob.dim])
@@ -106,6 +109,5 @@ class DYCORSStrategy(SRBFStrategy):
             sampling_radius=self.sampling_radius,
             prob_perturb=prob_perturb,
         )
-
         for i in range(num_pts):
             self.batch_queue.append(np.copy(np.ravel(new_points[i, :])))
